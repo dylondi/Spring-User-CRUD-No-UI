@@ -1,6 +1,9 @@
 package com.example.usercrudnoui.controller;
 
+import com.example.usercrudnoui.exceptions.ConstraintsViolationException;
+import com.example.usercrudnoui.exceptions.EntityNotFoundException;
 import com.example.usercrudnoui.model.User;
+import com.example.usercrudnoui.service.DefaultUserService;
 import com.example.usercrudnoui.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +13,7 @@ import java.util.List;
  * Processes incoming CRUD User REST requests.
  */
 @RestController
+@RequestMapping("users")
 public class UserController {
 
     /**
@@ -25,7 +29,7 @@ public class UserController {
      * Retrieves a List of all Users from UserService's listAll() method.
      * @return List of All Users
      */
-    @GetMapping("/users")
+    @GetMapping()
     public List<User> findAllUsers(){
         return userService.listAll();
     }
@@ -36,9 +40,13 @@ public class UserController {
      * @param user
      * @return New User Object
      */
-    @PostMapping("/users/create")
-    public User createNewUser(@RequestBody User user){
-        return userService.createUser(user);
+    @PostMapping("/create")
+    public User createNewUser(@RequestBody User user) throws ConstraintsViolationException {
+        try {
+            return userService.createUser(user);
+        } catch (ConstraintsViolationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -46,9 +54,13 @@ public class UserController {
      * @param id
      * @return User Object
      */
-    @GetMapping("/users/user/{id}")
-    public User findUserById(@PathVariable Integer id) {
-        return userService.findUserById(id);
+    @GetMapping("/user/{id}")
+    public User findUserById(@PathVariable Integer id){
+        try {
+            return userService.findUserById(id);
+        } catch (EntityNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -57,8 +69,8 @@ public class UserController {
      * @param user
      * @return Updated User Object
      */
-    @PutMapping("/users/update")
-    public User updateUser(@RequestBody User user){
+    @PutMapping("/update")
+    public User updateUser(@RequestBody User user) throws EntityNotFoundException {
         return userService.updateUser(user);
     }
 
@@ -67,7 +79,7 @@ public class UserController {
      * @param id
      * @return String containing message
      */
-    @DeleteMapping("/users/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public String deleteUser(@PathVariable Integer id){
         return userService.deleteUserById(id);
     }
